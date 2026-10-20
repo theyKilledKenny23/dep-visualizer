@@ -1,0 +1,9 @@
+{
+    "package_name": "requests",
+    "repository_url": "https://pypi.org/pypi/requests/json",
+    "test_mode": false,
+    "test_repo_path": "",
+    "output_image": "dependencies.png",
+    "max_depth": 5,
+    "filter_substring": ""
+}
