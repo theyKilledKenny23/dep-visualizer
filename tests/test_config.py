@@ -2,8 +2,8 @@ import unittest
 import sys
 import os
 
-# Добавляем путь к src для импорта функций
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', 'src')))
 
 from src.main import (
     validate_package_name,
@@ -18,7 +18,6 @@ class TestConfigValidation(unittest.TestCase):
 
     def test_valid_package_name(self):
         """Проверка корректного имени пакета."""
-        # Не должно вызывать исключений
         validate_package_name("requests")
 
     def test_invalid_package_name_empty(self):

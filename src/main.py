@@ -94,8 +94,8 @@ def validate_max_depth(depth):
 
 def validate_filter_substring(substring):
     """Проверяет подстроку фильтрации."""
-    if not isinstance(substring, str):
-        print("ошибка: filter_substring должен быть строкой")
+    if substring is None:
+        print("ошибка: filter_substring не должен быть None")
         sys.exit(1)
 
 
@@ -112,7 +112,6 @@ def print_config(config):
     print("================================")
 
 
-# --- Точка входа ---
 config = load_config(CONFIG_FILE)
 validate_config(config)
 
