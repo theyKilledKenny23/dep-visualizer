@@ -1,6 +1,6 @@
 {
-    "package_name": "requests",
-    "repository_url": "https://pypi.org/pypi/requests/json",
+    "package_name": "gson",
+    "repository_url": "https://repo1.maven.org/maven2/",
     "test_mode": false,
     "test_repo_path": "",
     "output_image": "dependencies.png",
