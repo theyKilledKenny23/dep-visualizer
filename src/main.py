@@ -222,6 +222,5 @@ validate_output_image(config["output_image"])
 validate_max_depth(config["max_depth"])
 validate_filter_substring(config["filter_substring"])
 
-print_config(config)
 
 fetch_dependencies(config)
