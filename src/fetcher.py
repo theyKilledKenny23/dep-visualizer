@@ -1,7 +1,7 @@
 import json
 import urllib.error
 import urllib.request
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as e_t
 
 SEARCH_API_URL = "https://search.maven.org/solrsearch/select"
 MAVEN_NS = {"m": "http://maven.apache.org/POM/4.0.0"}
@@ -45,40 +45,40 @@ def download_pom(url):
         return None
 
 
+def get_dep_info(dep):
+    """Извлекает group, artifact и scope из XML-узла зависимости."""
+    group = (
+        dep.findtext("m:groupId", namespaces=MAVEN_NS)
+        or dep.findtext("groupId")
+    )
+    artifact = (
+        dep.findtext("m:artifactId", namespaces=MAVEN_NS)
+        or dep.findtext("artifactId")
+    )
+    scope = (
+        dep.findtext("m:scope", namespaces=MAVEN_NS)
+        or dep.findtext("scope")
+        or "compile"
+    )
+    return group, artifact, scope
+
+
 def parse_direct_dependencies(pom_content):
     """Парсит XML POM и извлекает список прямых зависимостей."""
     try:
-        root = ET.fromstring(pom_content)
-    except ET.ParseError as e:
+        root = e_t.fromstring(pom_content)
+    except e_t.ParseError as e:
         print(f"ошибка парсинга XML: {e}")
         return []
 
-    dependencies = []
-    deps_nodes = root.findall(
-        ".//m:dependencies/m:dependency", MAVEN_NS
-    )
+    deps_nodes = root.findall(".//m:dependencies/m:dependency", MAVEN_NS)
     if not deps_nodes:
         deps_nodes = root.findall(".//dependencies/dependency")
 
+    dependencies = []
     for dep in deps_nodes:
-        group = (
-            dep.findtext("m:groupId", namespaces=MAVEN_NS)
-            or dep.findtext("groupId")
-        )
-        artifact = (
-            dep.findtext("m:artifactId", namespaces=MAVEN_NS)
-            or dep.findtext("artifactId")
-        )
-        scope = (
-            dep.findtext("m:scope", namespaces=MAVEN_NS)
-            or dep.findtext("scope")
-            or "compile"
-        )
-
-        if scope in ("test", "provided", "system"):
-            continue
-
-        if group and artifact:
+        group, artifact, scope = get_dep_info(dep)
+        if group and artifact and scope not in ("test", "provided", "system"):
             dependencies.append(f"{group}:{artifact}")
 
     return dependencies
