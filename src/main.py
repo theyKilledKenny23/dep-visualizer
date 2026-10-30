@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import argparse
+from graph_builder import build_dependency_graph
 
 
 CONFIG_FILE = "config.json"
@@ -223,4 +224,21 @@ validate_max_depth(config["max_depth"])
 validate_filter_substring(config["filter_substring"])
 
 
-fetch_dependencies(config)
+print("\n=== Построение графа зависимостей (DFS без рекурсии) ===")
+print(f"Стартовый пакет: {config['package_name']}")
+print(f"Максимальная глубина: {config['max_depth']}")
+if config["filter_substring"]:
+    print(f"Фильтр подстроки: '{config['filter_substring']}'")
+
+graph = build_dependency_graph(
+    start_package=config["package_name"],
+    max_depth=config["max_depth"],
+    filter_substring=config["filter_substring"],
+    config=config,
+)
+
+print(f"\nНайдено пакетов в графе: {len(graph)}")
+for pkg, deps in graph.items():
+    deps_str = ", ".join(deps) if deps else "нет"
+    print(f"  {pkg} -> {deps_str}")
+print("=========================================================\n")

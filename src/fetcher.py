@@ -63,22 +63,42 @@ def get_dep_info(dep):
     return group, artifact, scope
 
 
-def parse_direct_dependencies(pom_content):
+def parse_direct_dependencies(pom_content, self_artifact=None):
     """Парсит XML POM и извлекает список прямых зависимостей."""
     try:
         root = e_t.fromstring(pom_content)
     except e_t.ParseError as e:
         print(f"ошибка парсинга XML: {e}")
         return []
-
     deps_nodes = root.findall(".//m:dependencies/m:dependency", MAVEN_NS)
     if not deps_nodes:
         deps_nodes = root.findall(".//dependencies/dependency")
-
     dependencies = []
     for dep in deps_nodes:
-        group, artifact, scope = get_dep_info(dep)
-        if group and artifact and scope not in ("test", "provided", "system"):
-            dependencies.append(f"{group}:{artifact}")
+        group = (
+            dep.findtext("m:groupId", namespaces=MAVEN_NS)
+            or dep.findtext("groupId")
+        )
+        artifact = (
+            dep.findtext("m:artifactId", namespaces=MAVEN_NS)
+            or dep.findtext("artifactId")
+        )
+        scope = (
+            dep.findtext("m:scope", namespaces=MAVEN_NS)
+            or dep.findtext("scope")
+            or "compile"
+        )
+        if scope in ("test", "provided", "system"):
+            continue
+        if group and artifact:
+            if artifact == self_artifact:
+                continue
+            dependencies.append(artifact)
+    seen = set()
+    unique_deps = []
+    for dep in dependencies:
+        if dep not in seen:
+            seen.add(dep)
+            unique_deps.append(dep)
 
-    return dependencies
+    return unique_deps
