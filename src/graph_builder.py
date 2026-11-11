@@ -36,41 +36,67 @@ def fetch_real_deps(package_name, repo_url):
     return parse_direct_dependencies(pom_content, self_artifact=package_name)
 
 
-def build_dependency_graph(start_package, max_depth, filter_substring, config):
-    """Строит граф зависимостей с помощью итеративного DFS (без рекурсии)."""
+def should_skip_package(pkg, graph, depth, max_depth, filter_substring):
+    """Проверяет, нужно ли пропустить пакет при обходе."""
+    if pkg in graph:
+        return True
+    if depth >= max_depth:
+        return True
+    if filter_substring and filter_substring in pkg:
+        return True
+    return False
+
+
+def get_package_deps(pkg, is_test, test_repo, repo_url):
+    """Получает зависимости пакета (из теста или реального репозитория)."""
+    if is_test:
+        return test_repo.get(pkg, [])
+    return fetch_real_deps(pkg, repo_url)
+
+
+def add_deps_to_stack(deps, graph, depth, filter_substring, stack):
+    """Добавляет валидные зависимости в стек обхода."""
+    for dep in deps:
+        if filter_substring and filter_substring in dep:
+            continue
+        if dep not in graph:
+            stack.append((dep, depth + 1))
+
+
+def build_dependency_graph(
+    start_package, max_depth, filter_substring, config
+):
+    """Строит граф зависимостей с помощью итеративного DFS."""
     graph = {}
     stack = [(start_package, 0)]
 
     is_test = config.get("test_mode", False)
-    test_repo = load_test_repo(config.get("test_repo_path", "")) \
-        if is_test else {}
+    test_repo = (
+        load_test_repo(config.get("test_repo_path", ""))
+        if is_test
+        else {}
+    )
 
     if is_test and not test_repo:
         return {}
 
+    repo_url = config["repository_url"]
+
     while stack:
         current_pkg, depth = stack.pop()
 
-        if current_pkg in graph:
+        if should_skip_package(
+            current_pkg, graph, depth, max_depth, filter_substring
+        ):
             continue
 
-        if depth >= max_depth:
-            continue
-
-        if filter_substring and filter_substring in current_pkg:
-            continue
-
-        deps = (
-            test_repo.get(current_pkg, [])
-            if is_test
-            else fetch_real_deps(current_pkg, config["repository_url"])
+        deps = get_package_deps(
+            current_pkg, is_test, test_repo, repo_url
         )
         graph[current_pkg] = deps
 
-        for dep in deps:
-            if filter_substring and filter_substring in dep:
-                continue
-            if dep not in graph:
-                stack.append((dep, depth + 1))
+        add_deps_to_stack(
+            deps, graph, depth, filter_substring, stack
+        )
 
     return graph

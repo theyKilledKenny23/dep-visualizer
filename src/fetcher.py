@@ -63,6 +63,23 @@ def get_dep_info(dep):
     return group, artifact, scope
 
 
+def is_valid_scope(scope):
+    """Проверяет, что scope зависимости подходит для анализа."""
+    excluded = ("test", "provided", "system")
+    return scope not in excluded
+
+
+def deduplicate(items):
+    """Удаляет дубликаты из списка, сохраняя порядок."""
+    seen = set()
+    unique = []
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            unique.append(item)
+    return unique
+
+
 def parse_direct_dependencies(pom_content, self_artifact=None):
     """Парсит XML POM и извлекает список прямых зависимостей."""
     try:
@@ -70,35 +87,22 @@ def parse_direct_dependencies(pom_content, self_artifact=None):
     except e_t.ParseError as e:
         print(f"ошибка парсинга XML: {e}")
         return []
-    deps_nodes = root.findall(".//m:dependencies/m:dependency", MAVEN_NS)
+
+    deps_nodes = root.findall(
+        ".//m:dependencies/m:dependency", MAVEN_NS
+    )
     if not deps_nodes:
         deps_nodes = root.findall(".//dependencies/dependency")
+
     dependencies = []
     for dep in deps_nodes:
-        group = (
-            dep.findtext("m:groupId", namespaces=MAVEN_NS)
-            or dep.findtext("groupId")
-        )
-        artifact = (
-            dep.findtext("m:artifactId", namespaces=MAVEN_NS)
-            or dep.findtext("artifactId")
-        )
-        scope = (
-            dep.findtext("m:scope", namespaces=MAVEN_NS)
-            or dep.findtext("scope")
-            or "compile"
-        )
-        if scope in ("test", "provided", "system"):
+        group, artifact, scope = get_dep_info(dep)
+        if not group or not artifact:
             continue
-        if group and artifact:
-            if artifact == self_artifact:
-                continue
-            dependencies.append(artifact)
-    seen = set()
-    unique_deps = []
-    for dep in dependencies:
-        if dep not in seen:
-            seen.add(dep)
-            unique_deps.append(dep)
+        if not is_valid_scope(scope):
+            continue
+        if artifact == self_artifact:
+            continue
+        dependencies.append(artifact)
 
-    return unique_deps
+    return deduplicate(dependencies)
