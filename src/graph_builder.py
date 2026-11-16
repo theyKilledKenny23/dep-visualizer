@@ -100,3 +100,29 @@ def build_dependency_graph(
         )
 
     return graph
+
+
+def get_load_order(graph):
+    """Возвращает порядок загрузки зависимостей (итеративный пост-обход)."""
+    visited = set()
+    order = []
+    stack = [(node, False) for node in graph]
+
+    while stack:
+        node, processed = stack.pop()
+
+        if processed:
+            order.append(node)
+            continue
+
+        if node in visited:
+            continue
+
+        visited.add(node)
+        stack.append((node, True))
+
+        for dep in graph.get(node, []):
+            if dep in graph and dep not in visited:
+                stack.append((dep, False))
+
+    return order

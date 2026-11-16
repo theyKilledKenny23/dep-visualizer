@@ -48,6 +48,11 @@ def parse_cli_args():
         default=CONFIG_FILE,
         help=f"Путь к файлу конфигурации (по умолчанию: {CONFIG_FILE})"
     )
+    parser.add_argument(
+        "--load-order",
+        action="store_true",
+        help="Вывести порядок загрузки зависимостей"
+    )
     return parser.parse_args()
 
 
@@ -242,3 +247,11 @@ for pkg, deps in graph.items():
     deps_str = ", ".join(deps) if deps else "нет"
     print(f"  {pkg} -> {deps_str}")
 print("=========================================================\n")
+
+if cli_args.load_order:
+    print("\n=== Порядок загрузки зависимостей ===")
+    from graph_builder import get_load_order
+    load_order = get_load_order(graph)
+    for i, pkg in enumerate(load_order, start=1):
+        print(f"  {i}. {pkg}")
+    print("=====================================\n")
