@@ -53,6 +53,10 @@ def parse_cli_args():
         action="store_true",
         help="Вывести порядок загрузки зависимостей"
     )
+    parser.add_argument(
+        "--save-image",
+        help="Имя файла для сохранения изображения графа (PNG)"
+    )
     return parser.parse_args()
 
 
@@ -255,3 +259,21 @@ if cli_args.load_order:
     for i, pkg in enumerate(load_order, start=1):
         print(f"  {i}. {pkg}")
     print("=====================================\n")
+
+if cli_args.save_image:
+    print("\n=== Визуализация графа (Graphviz) ===")
+    from visualizer import (
+        generate_dot,
+        save_dot_file,
+        render_png,
+    )
+
+    dot_content = generate_dot(graph, config["package_name"])
+    print(dot_content)
+
+    dot_path = cli_args.save_image + ".dot"
+    png_path = cli_args.save_image + ".png"
+
+    save_dot_file(dot_content, dot_path)
+    render_png(dot_path, png_path)
+    print("=========================================\n")

@@ -70,3 +70,8 @@ logs/
 *.png
 *.svg
 config_local.json
+
+# Сгенерированные графы зависимостей
+graphs/
+*.dot
+*.png
