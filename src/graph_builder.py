@@ -102,11 +102,11 @@ def build_dependency_graph(
     return graph
 
 
-def get_load_order(graph):
+def get_load_order(graph, start_package):
     """Возвращает порядок загрузки зависимостей (итеративный пост-обход)."""
     visited = set()
     order = []
-    stack = [(node, False) for node in graph]
+    stack = [(start_package, False)]
 
     while stack:
         node, processed = stack.pop()
