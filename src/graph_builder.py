@@ -126,3 +126,32 @@ def get_load_order(graph, start_package):
                 stack.append((dep, False))
 
     return order
+
+def _has_cycle_from(node, graph, visited, stack):
+    """Рекурсивно проверяет наличие цикла из узла."""
+    visited.add(node)
+    stack.add(node)
+
+    for dep in graph.get(node, []):
+        if dep not in graph:
+            continue
+        if dep not in visited:
+            if _has_cycle_from(dep, graph, visited, stack):
+                return True
+        elif dep in stack:
+            return True
+
+    stack.remove(node)
+    return False
+
+
+def has_cycle(graph):
+    """Проверяет наличие циклических зависимостей в графе."""
+    visited = set()
+    stack = set()
+
+    for node in graph:
+        if node not in visited:
+            if _has_cycle_from(node, graph, visited, stack):
+                return True
+    return False

@@ -1,0 +1,12 @@
+digraph dependencies {
+    node [shape=box, style=filled, fillcolor=lightblue];
+    "gson" [fillcolor=gold];
+    "proguard-core";
+    "proguard-base";
+    "error_prone_annotations";
+    "gson" -> "error_prone_annotations";
+    "gson" -> "proguard-base";
+    "gson" -> "proguard-core";
+    "proguard-base" -> "proguard-core";
+    "proguard-base" -> "gson";
+}

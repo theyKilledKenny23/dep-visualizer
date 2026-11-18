@@ -1,0 +1,12 @@
+digraph dependencies {
+    node [shape=box, style=filled, fillcolor=lightblue];
+    "jackson-databind" [fillcolor=gold];
+    "jackson-core";
+    "jackson-annotations";
+    "byte-buddy-agent";
+    "byte-buddy";
+    "jackson-databind" -> "byte-buddy";
+    "jackson-databind" -> "byte-buddy-agent";
+    "jackson-databind" -> "jackson-annotations";
+    "jackson-databind" -> "jackson-core";
+}

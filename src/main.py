@@ -250,8 +250,17 @@ print("=========================================================\n")
 
 if cli_args.load_order:
     print("\n=== Порядок загрузки зависимостей ===")
-    from graph_builder import get_load_order
-    load_order = get_load_order(graph, config["package_name"])
-    for i, pkg in enumerate(load_order, start=1):
-        print(f"  {i}. {pkg}")
+    from graph_builder import get_load_order, has_cycle
+
+    if has_cycle(graph):
+        print(
+            "ошибка: обнаружена циклическая зависимость, "
+            "порядок загрузки не может быть определён"
+        )
+    else:
+        load_order = get_load_order(
+            graph, config["package_name"]
+        )
+        for i, pkg in enumerate(load_order, start=1):
+            print(f"  {i}. {pkg}")
     print("=====================================\n")
